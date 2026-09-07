@@ -91,3 +91,63 @@ main {
     color: #e66f6f;
     font-family: monospace;
 }
+
+.camera-panel {
+    margin-top: 32px;
+    padding: 24px;
+
+    background: #11151c;
+    border: 1px solid #252b36;
+    border-radius: 12px;
+}
+
+.camera-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.camera-view {
+    margin-top: 20px;
+}
+
+#camera-image {
+    width: 100%;
+    max-height: 600px;
+
+    object-fit: contain;
+
+    background: #050608;
+}
+
+#capture-button {
+    padding: 10px 18px;
+
+    background: #f2f4f7;
+    color: #0a0d12;
+
+    border: 0;
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+
+#camera-gallery {
+    display: flex;
+    gap: 10px;
+
+    margin-top: 16px;
+
+    overflow-x: auto;
+}
+
+.gallery-image {
+    width: 140px;
+    height: 90px;
+
+    object-fit: cover;
+
+    cursor: pointer;
+
+    border: 1px solid #252b36;
+}

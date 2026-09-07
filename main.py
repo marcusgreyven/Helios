@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+from pathlib import Path
+from camera import HeliosCamera
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -17,6 +19,18 @@ app.mount(
     "/static",
     StaticFiles(directory="static"),
     name="static"
+)
+
+BASE_DIR = Path(__file__).resolve().parent
+
+camera = HeliosCamera(
+    BASE_DIR / "captures"
+)
+
+app.mount(
+    "/captures",
+    StaticFiles(directory=BASE_DIR / "captures"),
+    name="captures"
 )
 
 templates = Jinja2Templates(directory="templates")
@@ -58,3 +72,40 @@ if __name__ == "__main__":
         port=8000,
         reload=False
     )
+
+@app.post("/api/camera/capture")
+def capture_image():
+    try:
+        filename = camera.capture()
+
+        return {
+            "status": "ok",
+            "filename": filename,
+            "url": f"/captures/{filename}"
+        }
+
+    except Exception as error:
+        return {
+            "status": "error",
+            "error": str(error)
+        }
+
+@app.get("/api/camera/images")
+def camera_images():
+    capture_dir = BASE_DIR / "captures"
+
+    images = sorted(
+        capture_dir.glob("*.jpg"),
+        key=lambda image: image.stat().st_mtime,
+        reverse=True
+    )
+
+    return {
+        "images": [
+            {
+                "filename": image.name,
+                "url": f"/captures/{image.name}"
+            }
+            for image in images
+        ]
+    }
