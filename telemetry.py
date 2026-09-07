@@ -1,35 +1,25 @@
-from umi10dof import UMI10DOF
+from imu import HeliosIMU
 
-imu = UMI10DOF()
+
+imu = HeliosIMU()
 
 
 def get_telemetry():
     data = imu.read()
 
-    ax, ay, az = data.accel
-    gx, gy, gz = data.gyro
-    mx, my, mz = data.mag
-
     return {
         "imu": {
-            "acceleration": {
-                "x": ax,
-                "y": ay,
-                "z": az
-            },
+            "acceleration": data["acceleration"],
 
-            "gyro": {
-                "x": gx,
-                "y": gy,
-                "z": gz
-            },
+            "gyro": data["gyro"],
 
+            # Магнитометр пока не определяется по I2C
             "magnetic": {
-                "x": mx,
-                "y": my,
-                "z": mz
+                "x": None,
+                "y": None,
+                "z": None
             },
 
-            "pressure": data.pressure
+            "pressure": data["pressure"]
         }
     }
