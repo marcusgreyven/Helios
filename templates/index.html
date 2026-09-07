@@ -102,7 +102,7 @@
 
         <span
             id="mode"
-            class="vehicle-value"
+            class="mode-state"
         >
             ---
         </span>
@@ -148,6 +148,66 @@
 <div class="section-title">
 
     <span>
+        FLIGHT MODE CONTROL
+    </span>
+
+    <span class="section-code">
+        GROUND COMMAND
+    </span>
+
+</div>
+
+
+<section class="mode-control-panel">
+
+    <div class="mode-description">
+
+        <span class="mode-description-title">
+            VEHICLE STATE
+        </span>
+
+        <span
+            id="flight-command-result"
+            class="mode-command-result"
+        >
+            COMMAND INTERFACE READY
+        </span>
+
+    </div>
+
+
+    <div class="mode-buttons">
+
+        <button
+            class="mode-command"
+            data-mode="STANDBY"
+        >
+            STANDBY
+        </button>
+
+        <button
+            class="mode-command"
+            data-mode="NOMINAL"
+        >
+            NOMINAL
+        </button>
+
+        <button
+            class="mode-command mode-command-safe"
+            data-mode="SAFE"
+        >
+            SAFE
+        </button>
+
+    </div>
+
+</section>
+
+
+
+<div class="section-title">
+
+    <span>
         SYSTEM STATUS
     </span>
 
@@ -158,9 +218,7 @@
 </div>
 
 
-
 <section class="systems-grid">
-
 
     <div class="system-item">
 
@@ -257,6 +315,180 @@
 
     </div>
 
+</section>
+
+
+
+<div class="section-title">
+
+    <span>
+        ATTITUDE
+    </span>
+
+    <span class="section-code">
+        ADCS // COMPLEMENTARY
+    </span>
+
+</div>
+
+
+<section class="attitude-panel">
+
+    <div class="attitude-data">
+
+        <div class="attitude-data-header">
+
+            <div>
+
+                <span class="attitude-kicker">
+                    ATTITUDE SOLUTION
+                </span>
+
+                <strong id="attitude-solution">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="attitude-state-wrap">
+
+                <span>
+                    STATE
+                </span>
+
+                <strong
+                    id="attitude-state"
+                    class="attitude-state"
+                >
+                    ---
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="attitude-metrics">
+
+            <div class="attitude-metric">
+
+                <span>
+                    ROLL
+                </span>
+
+                <strong>
+                    <span id="attitude-roll">—</span>
+                    <small>°</small>
+                </strong>
+
+            </div>
+
+
+            <div class="attitude-metric">
+
+                <span>
+                    PITCH
+                </span>
+
+                <strong>
+                    <span id="attitude-pitch">—</span>
+                    <small>°</small>
+                </strong>
+
+            </div>
+
+
+            <div class="attitude-metric">
+
+                <span>
+                    YAW
+                </span>
+
+                <strong
+                    id="attitude-yaw"
+                    class="attitude-yaw-unavailable"
+                >
+                    NO SOLUTION
+                </strong>
+
+            </div>
+
+
+            <div class="attitude-metric">
+
+                <span>
+                    RATE
+                </span>
+
+                <strong>
+                    <span id="attitude-rate">—</span>
+                    <small>°/s</small>
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="attitude-note">
+
+            <span>
+                REFERENCE FRAME
+            </span>
+
+            <strong id="attitude-frame">
+                SENSOR
+            </strong>
+
+            <span class="attitude-note-divider">
+                /
+            </span>
+
+            <span>
+                YAW REQUIRES MAGNETOMETER
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="attitude-visual">
+
+        <div class="attitude-display">
+
+            <div class="attitude-ring ring-outer"></div>
+            <div class="attitude-ring ring-inner"></div>
+
+            <div
+                id="attitude-horizon"
+                class="attitude-horizon"
+            >
+
+                <div class="horizon-line"></div>
+
+                <div class="horizon-mark horizon-mark-left"></div>
+                <div class="horizon-mark horizon-mark-right"></div>
+
+            </div>
+
+            <div class="reticle">
+
+                <span class="reticle-left"></span>
+                <span class="reticle-center"></span>
+                <span class="reticle-right"></span>
+
+            </div>
+
+        </div>
+
+
+        <div class="attitude-visual-label">
+            SENSOR FRAME REFERENCE
+        </div>
+
+    </div>
 
 </section>
 
@@ -275,9 +507,7 @@
 </div>
 
 
-
 <section class="telemetry-grid">
-
 
     <article class="telemetry-card">
 
@@ -365,7 +595,6 @@
     </article>
 
 
-
     <article class="telemetry-card">
 
         <div class="card-header">
@@ -429,7 +658,6 @@
         </div>
 
     </article>
-
 
 
     <article class="telemetry-card">
@@ -500,7 +728,6 @@
     </article>
 
 
-
     <article class="telemetry-card">
 
         <div class="card-header">
@@ -535,7 +762,6 @@
 
     </article>
 
-
 </section>
 
 
@@ -553,12 +779,9 @@
 </div>
 
 
-
 <section class="payload-panel">
 
-
     <div class="payload-toolbar">
-
 
         <div class="payload-identity">
 
@@ -576,9 +799,7 @@
         </div>
 
 
-
         <div class="payload-stats">
-
 
             <div>
 
@@ -631,13 +852,10 @@
 
             </div>
 
-
         </div>
 
 
-
         <div class="payload-actions">
-
 
             <button
                 id="clear-archive-button"
@@ -646,7 +864,6 @@
                 CLEAR ARCHIVE
             </button>
 
-
             <button
                 id="capture-button"
                 class="capture-button"
@@ -654,16 +871,12 @@
                 CAPTURE FRAME
             </button>
 
-
         </div>
-
 
     </div>
 
 
-
     <div class="payload-layout">
-
 
         <div class="camera-view">
 
@@ -682,9 +895,7 @@
         </div>
 
 
-
         <aside class="frame-data">
-
 
             <div class="frame-data-title">
                 FRAME DATA
@@ -755,11 +966,9 @@
 
             </div>
 
-
         </aside>
 
     </div>
-
 
 
     <div
@@ -767,6 +976,56 @@
         class="camera-gallery"
     ></div>
 
+</section>
+
+
+
+<div class="section-title">
+
+    <span>
+        EVENT LOG
+    </span>
+
+    <span class="section-code">
+        PERSISTENT // LAST 60
+    </span>
+
+</div>
+
+
+<section class="event-panel">
+
+    <div class="event-header">
+
+        <span>
+            UTC
+        </span>
+
+        <span>
+            SOURCE
+        </span>
+
+        <span>
+            LEVEL
+        </span>
+
+        <span>
+            EVENT
+        </span>
+
+    </div>
+
+
+    <div
+        id="event-log"
+        class="event-log"
+    >
+
+        <div class="event-empty">
+            WAITING FOR EVENT STREAM
+        </div>
+
+    </div>
 
 </section>
 
@@ -787,19 +1046,15 @@
     class="modal-backdrop"
 >
 
-
     <div class="modal">
-
 
         <div class="modal-code">
             OPTICAL PAYLOAD // ARCHIVE
         </div>
 
-
         <h2>
             DELETE OPTICAL ARCHIVE?
         </h2>
-
 
         <p>
 
@@ -816,14 +1071,12 @@
 
         <div class="modal-actions">
 
-
             <button
                 id="cancel-delete-button"
                 class="secondary-button"
             >
                 CANCEL
             </button>
-
 
             <button
                 id="confirm-delete-button"
@@ -832,20 +1085,18 @@
                 DELETE ARCHIVE
             </button>
 
-
         </div>
 
-
     </div>
-
 
 </div>
 
 
 
 <script src="/static/js/telemetry.js"></script>
-
+<script src="/static/js/flight.js"></script>
 <script src="/static/js/camera.js"></script>
+<script src="/static/js/events.js"></script>
 
 
 </body>

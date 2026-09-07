@@ -64,7 +64,6 @@ class HeliosCamera:
 
         self.camera.start()
 
-        # AE / AWB stabilization
         time.sleep(2)
 
 
