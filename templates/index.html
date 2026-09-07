@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Helios Mission Control</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/css/style.css"
+    >
+</head>
+
+<body>
+
+<header>
+    <h1>HELIOS</h1>
+    <p>Mission Control / Telemetry</p>
+</header>
+
+<main>
+
+    <section class="status-panel">
+        <span>SPACECRAFT</span>
+
+        <span id="status" class="status offline">
+            CONNECTING
+        </span>
+
+        <span id="timestamp"></span>
+    </section>
+
+
+    <section class="telemetry-grid">
+
+        <article class="card">
+            <h2>Acceleration</h2>
+
+            <p>
+                X:
+                <span id="accel-x">—</span>
+            </p>
+
+            <p>
+                Y:
+                <span id="accel-y">—</span>
+            </p>
+
+            <p>
+                Z:
+                <span id="accel-z">—</span>
+            </p>
+        </article>
+
+
+        <article class="card">
+            <h2>Gyroscope</h2>
+
+            <p>
+                X:
+                <span id="gyro-x">—</span>
+            </p>
+
+            <p>
+                Y:
+                <span id="gyro-y">—</span>
+            </p>
+
+            <p>
+                Z:
+                <span id="gyro-z">—</span>
+            </p>
+        </article>
+
+
+        <article class="card">
+            <h2>Magnetic Field</h2>
+
+            <p>
+                X:
+                <span id="mag-x">—</span>
+            </p>
+
+            <p>
+                Y:
+                <span id="mag-y">—</span>
+            </p>
+
+            <p>
+                Z:
+                <span id="mag-z">—</span>
+            </p>
+        </article>
+
+
+        <article class="card">
+            <h2>Pressure</h2>
+
+            <p class="large-value">
+                <span id="pressure">—</span>
+                hPa
+            </p>
+        </article>
+
+    </section>
+
+    <p id="error" class="error"></p>
+
+</main>
+
+
+<script src="/static/js/telemetry.js"></script>
+
+</body>
+</html>

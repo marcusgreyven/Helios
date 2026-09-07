@@ -1,0 +1,93 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #0a0d12;
+    color: #f2f4f7;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    padding: 32px 48px;
+    border-bottom: 1px solid #252a34;
+}
+
+header h1 {
+    margin: 0;
+    letter-spacing: 5px;
+}
+
+header p {
+    color: #7f8794;
+}
+
+main {
+    padding: 40px 48px;
+}
+
+.status-panel {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.status {
+    font-weight: bold;
+}
+
+.online {
+    color: #70d88f;
+}
+
+.offline {
+    color: #e66f6f;
+}
+
+.telemetry-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(260px, 1fr));
+
+    gap: 20px;
+}
+
+.card {
+    padding: 24px;
+
+    background: #11151c;
+
+    border:
+        1px solid #252b36;
+
+    border-radius: 12px;
+}
+
+.card h2 {
+    margin-top: 0;
+
+    color: #9099a7;
+
+    text-transform: uppercase;
+
+    letter-spacing: 2px;
+
+    font-size: 14px;
+}
+
+.card p {
+    font-family: monospace;
+    font-size: 18px;
+}
+
+.large-value {
+    font-size: 28px !important;
+}
+
+.error {
+    margin-top: 30px;
+    color: #e66f6f;
+    font-family: monospace;
+}
