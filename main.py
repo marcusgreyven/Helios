@@ -1,37 +1,54 @@
+from datetime import datetime, timezone
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from telemetry import get_telemetry
-from datetime import datetime, timezone
-from pathlib import Path
 from camera import HeliosCamera
 
+
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+TEMPLATES_DIR = BASE_DIR / "templates"
+CAPTURES_DIR = BASE_DIR / "captures"
+
+CAPTURES_DIR.mkdir(parents=True, exist_ok=True)
+
+
 app = FastAPI(
-    title="Helios",
-    version="0.1"
+    title="Helios Flight Control",
+    version="0.2"
 )
+
 
 app.mount(
     "/static",
-    StaticFiles(directory="static"),
+    StaticFiles(directory=STATIC_DIR),
     name="static"
-)
-
-BASE_DIR = Path(__file__).resolve().parent
-
-camera = HeliosCamera(
-    BASE_DIR / "captures"
 )
 
 app.mount(
     "/captures",
-    StaticFiles(directory=BASE_DIR / "captures"),
+    StaticFiles(directory=CAPTURES_DIR),
     name="captures"
 )
 
-templates = Jinja2Templates(directory="templates")
+
+templates = Jinja2Templates(
+    directory=TEMPLATES_DIR
+)
+
+
+camera = None
+camera_error = None
+
+try:
+    camera = HeliosCamera(CAPTURES_DIR)
+except Exception as error:
+    camera_error = str(error)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -49,26 +66,57 @@ async def telemetry():
 
         return {
             "status": "online",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "vehicle": "HLS-01",
+            "mode": "NOMINAL",
+            "timestamp": datetime.now(
+                timezone.utc
+            ).isoformat(),
             **data
         }
 
     except Exception as error:
         return {
             "status": "error",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "vehicle": "HLS-01",
+            "mode": "DEGRADED",
+            "timestamp": datetime.now(
+                timezone.utc
+            ).isoformat(),
             "error": str(error)
         }
 
+
+@app.get("/api/camera/status")
+async def camera_status():
+    if camera is None:
+        return {
+            "status": "offline",
+            "error": camera_error
+        }
+
+    return {
+        "status": "online"
+    }
+
+
 @app.post("/api/camera/capture")
 def capture_image():
+    if camera is None:
+        return {
+            "status": "error",
+            "error": camera_error or "Camera unavailable"
+        }
+
     try:
-        filename = camera.capture()
+        telemetry_snapshot = get_telemetry()
+
+        frame = camera.capture(
+            telemetry_snapshot
+        )
 
         return {
             "status": "ok",
-            "filename": filename,
-            "url": f"/captures/{filename}"
+            "frame": frame
         }
 
     except Exception as error:
@@ -77,25 +125,20 @@ def capture_image():
             "error": str(error)
         }
 
+
 @app.get("/api/camera/images")
 def camera_images():
-    capture_dir = BASE_DIR / "captures"
-
-    images = sorted(
-        capture_dir.glob("*.jpg"),
-        key=lambda image: image.stat().st_mtime,
-        reverse=True
-    )
+    if camera is None:
+        return {
+            "status": "offline",
+            "frames": []
+        }
 
     return {
-        "images": [
-            {
-                "filename": image.name,
-                "url": f"/captures/{image.name}"
-            }
-            for image in images
-        ]
+        "status": "online",
+        "frames": camera.list_frames()
     }
+
 
 if __name__ == "__main__":
     import uvicorn

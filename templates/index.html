@@ -1,6 +1,9 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -8,136 +11,575 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Helios Mission Control</title>
+    <title>
+        Helios Flight Control
+    </title>
 
     <link
         rel="stylesheet"
         href="/static/css/style.css"
     >
+
 </head>
+
 
 <body>
 
-<header>
-    <h1>HELIOS</h1>
-    <p>Mission Control / Telemetry</p>
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <div class="brand-name">
+            HELIOS
+        </div>
+
+        <div class="brand-subtitle">
+            FLIGHT CONTROL // HLS-01
+        </div>
+
+    </div>
+
+
+    <div class="topbar-right">
+
+        <span class="top-label">
+            UTC
+        </span>
+
+        <span
+            id="utc-time"
+            class="top-value"
+        >
+            --:--:--
+        </span>
+
+    </div>
+
 </header>
+
+
 
 <main>
 
-    <section class="status-panel">
-        <span>SPACECRAFT</span>
 
-        <span id="status" class="status offline">
-            CONNECTING
+<section class="vehicle-strip">
+
+    <div class="vehicle-item">
+
+        <span class="vehicle-label">
+            VEHICLE
         </span>
 
-        <span id="timestamp"></span>
-    </section>
+        <span class="vehicle-value">
+            HLS-01
+        </span>
 
-
-    <section class="telemetry-grid">
-
-        <article class="card">
-            <h2>Acceleration</h2>
-
-            <p>
-                X:
-                <span id="accel-x">—</span>
-            </p>
-
-            <p>
-                Y:
-                <span id="accel-y">—</span>
-            </p>
-
-            <p>
-                Z:
-                <span id="accel-z">—</span>
-            </p>
-        </article>
-
-
-        <article class="card">
-            <h2>Gyroscope</h2>
-
-            <p>
-                X:
-                <span id="gyro-x">—</span>
-            </p>
-
-            <p>
-                Y:
-                <span id="gyro-y">—</span>
-            </p>
-
-            <p>
-                Z:
-                <span id="gyro-z">—</span>
-            </p>
-        </article>
-
-
-        <article class="card">
-            <h2>Magnetic Field</h2>
-
-            <p>
-                X:
-                <span id="mag-x">—</span>
-            </p>
-
-            <p>
-                Y:
-                <span id="mag-y">—</span>
-            </p>
-
-            <p>
-                Z:
-                <span id="mag-z">—</span>
-            </p>
-        </article>
-
-
-        <article class="card">
-            <h2>Pressure</h2>
-
-            <p class="large-value">
-                <span id="pressure">—</span>
-                hPa
-            </p>
-        </article>
-
-    </section>
-
-    <section class="camera-panel">
-
-    <div class="camera-header">
-        <h2>Payload Camera</h2>
-
-        <button id="capture-button">
-            CAPTURE
-        </button>
     </div>
 
-    <div class="camera-view">
-        <img
-            id="camera-image"
-            alt="Helios camera"
+
+    <div class="vehicle-item">
+
+        <span class="vehicle-label">
+            LINK
+        </span>
+
+        <span
+            id="status"
+            class="status status-offline"
         >
+            ● CONNECTING
+        </span>
+
     </div>
 
-    <div id="camera-gallery"></div>
+
+    <div class="vehicle-item">
+
+        <span class="vehicle-label">
+            MODE
+        </span>
+
+        <span
+            id="mode"
+            class="vehicle-value"
+        >
+            ---
+        </span>
+
+    </div>
+
+
+    <div class="vehicle-item">
+
+        <span class="vehicle-label">
+            LAST PACKET
+        </span>
+
+        <span
+            id="packet-time"
+            class="vehicle-value mono"
+        >
+            ---
+        </span>
+
+    </div>
 
 </section>
 
-<script src="/static/js/camera.js"></script>
 
-    <p id="error" class="error"></p>
+
+<div class="section-title">
+
+    <span>
+        FLIGHT TELEMETRY
+    </span>
+
+    <span class="section-code">
+        IMU // LIVE
+    </span>
+
+</div>
+
+
+
+<section class="telemetry-grid">
+
+
+    <article class="telemetry-card">
+
+        <div class="card-header">
+
+            <span>
+                ACCELERATION
+            </span>
+
+            <span class="unit">
+                m/s²
+            </span>
+
+        </div>
+
+
+        <div class="primary-metric">
+
+            <span id="accel-mag">
+                —
+            </span>
+
+            <span class="metric-unit">
+                m/s²
+            </span>
+
+        </div>
+
+
+        <div class="secondary-metric">
+
+            <span id="accel-g">
+                —
+            </span>
+
+            <span>
+                g
+            </span>
+
+        </div>
+
+
+        <div class="axis-grid">
+
+            <div class="axis">
+
+                <span class="axis-name">
+                    X
+                </span>
+
+                <span id="accel-x">
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="axis">
+
+                <span class="axis-name">
+                    Y
+                </span>
+
+                <span id="accel-y">
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="axis">
+
+                <span class="axis-name">
+                    Z
+                </span>
+
+                <span id="accel-z">
+                    —
+                </span>
+
+            </div>
+
+        </div>
+
+    </article>
+
+
+
+    <article class="telemetry-card">
+
+        <div class="card-header">
+
+            <span>
+                ANGULAR RATE
+            </span>
+
+            <span class="unit">
+                °/s
+            </span>
+
+        </div>
+
+
+        <div class="metric-description">
+            BODY ROTATION RATE
+        </div>
+
+
+        <div class="axis-grid axis-grid-large">
+
+            <div class="axis">
+
+                <span class="axis-name">
+                    X
+                </span>
+
+                <span id="rate-x">
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="axis">
+
+                <span class="axis-name">
+                    Y
+                </span>
+
+                <span id="rate-y">
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="axis">
+
+                <span class="axis-name">
+                    Z
+                </span>
+
+                <span id="rate-z">
+                    —
+                </span>
+
+            </div>
+
+        </div>
+
+    </article>
+
+
+
+    <article class="telemetry-card">
+
+        <div class="card-header">
+
+            <span>
+                MAGNETIC FIELD
+            </span>
+
+            <span class="unit">
+                µT
+            </span>
+
+        </div>
+
+
+        <div
+            id="mag-status"
+            class="sensor-unavailable"
+        >
+            NO DATA
+        </div>
+
+
+        <div class="axis-grid">
+
+            <div class="axis">
+
+                <span class="axis-name">
+                    X
+                </span>
+
+                <span id="mag-x">
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="axis">
+
+                <span class="axis-name">
+                    Y
+                </span>
+
+                <span id="mag-y">
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="axis">
+
+                <span class="axis-name">
+                    Z
+                </span>
+
+                <span id="mag-z">
+                    —
+                </span>
+
+            </div>
+
+        </div>
+
+    </article>
+
+
+
+    <article class="telemetry-card">
+
+        <div class="card-header">
+
+            <span>
+                PRESSURE
+            </span>
+
+            <span class="unit">
+                hPa
+            </span>
+
+        </div>
+
+
+        <div class="primary-metric">
+
+            <span id="pressure">
+                —
+            </span>
+
+            <span class="metric-unit">
+                hPa
+            </span>
+
+        </div>
+
+
+        <div class="metric-description">
+            AMBIENT STATIC PRESSURE
+        </div>
+
+    </article>
+
+
+</section>
+
+
+
+<div class="section-title payload-title">
+
+    <span>
+        OPTICAL PAYLOAD
+    </span>
+
+    <span class="section-code">
+        CAM-01
+    </span>
+
+</div>
+
+
+
+<section class="payload-panel">
+
+
+    <div class="payload-toolbar">
+
+
+        <div>
+
+            <div class="payload-name">
+                CAMERA SYSTEM
+            </div>
+
+            <div
+                id="payload-status"
+                class="payload-status"
+            >
+                STANDBY
+            </div>
+
+        </div>
+
+
+        <button
+            id="capture-button"
+            class="capture-button"
+        >
+            CAPTURE FRAME
+        </button>
+
+
+    </div>
+
+
+
+    <div class="payload-layout">
+
+
+        <div class="camera-view">
+
+            <div
+                id="no-frame"
+                class="no-frame"
+            >
+                NO FRAME SELECTED
+            </div>
+
+            <img
+                id="camera-image"
+                alt="Helios optical payload"
+            >
+
+        </div>
+
+
+
+        <aside class="frame-data">
+
+
+            <div class="frame-data-title">
+                FRAME DATA
+            </div>
+
+
+            <div class="frame-row">
+
+                <span>
+                    FRAME
+                </span>
+
+                <strong id="frame-name">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="frame-row">
+
+                <span>
+                    UTC
+                </span>
+
+                <strong id="frame-time">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="frame-row">
+
+                <span>
+                    ACCEL
+                </span>
+
+                <strong id="frame-accel">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="frame-row">
+
+                <span>
+                    RATE X
+                </span>
+
+                <strong id="frame-rate">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="frame-row">
+
+                <span>
+                    PRESS
+                </span>
+
+                <strong id="frame-pressure">
+                    ---
+                </strong>
+
+            </div>
+
+
+        </aside>
+
+    </div>
+
+
+
+    <div
+        id="camera-gallery"
+        class="camera-gallery"
+    ></div>
+
+
+</section>
+
+
+
+<div
+    id="error"
+    class="error-message"
+></div>
+
 
 </main>
 
 
+
 <script src="/static/js/telemetry.js"></script>
 
+<script src="/static/js/camera.js"></script>
+
+
 </body>
+
 </html>

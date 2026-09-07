@@ -1,86 +1,330 @@
 const captureButton =
-    document.getElementById("capture-button");
+    document.getElementById(
+        "capture-button"
+    );
 
 const cameraImage =
-    document.getElementById("camera-image");
+    document.getElementById(
+        "camera-image"
+    );
 
-const gallery =
-    document.getElementById("camera-gallery");
+const cameraGallery =
+    document.getElementById(
+        "camera-gallery"
+    );
+
+const payloadStatus =
+    document.getElementById(
+        "payload-status"
+    );
+
+const noFrame =
+    document.getElementById(
+        "no-frame"
+    );
 
 
-async function captureImage() {
+function frameNumber(
+    value,
+    digits = 3
+) {
 
-    captureButton.disabled = true;
-    captureButton.textContent = "CAPTURING...";
+    if (
+        value === null ||
+        value === undefined ||
+        typeof value !== "number"
+    ) {
+        return "---";
+    }
+
+    return value.toFixed(
+        digits
+    );
+}
+
+
+function frameUtc(timestamp) {
+
+    if (!timestamp) {
+        return "---";
+    }
+
+    return new Date(
+        timestamp
+    )
+        .toISOString()
+        .substring(11, 23)
+        + "Z";
+}
+
+
+function renderFrame(frame) {
+
+    if (!frame) {
+        return;
+    }
+
+
+    cameraImage.src =
+        frame.url
+        + "?t="
+        + Date.now();
+
+
+    cameraImage.style.display =
+        "block";
+
+    noFrame.style.display =
+        "none";
+
+
+    document.getElementById(
+        "frame-name"
+    ).textContent =
+        frame.frame_id || "---";
+
+
+    document.getElementById(
+        "frame-time"
+    ).textContent =
+        frameUtc(
+            frame.captured_at
+        );
+
+
+    const telemetry =
+        frame.telemetry;
+
+
+    if (!telemetry) {
+
+        document.getElementById(
+            "frame-accel"
+        ).textContent = "---";
+
+        document.getElementById(
+            "frame-rate"
+        ).textContent = "---";
+
+        document.getElementById(
+            "frame-pressure"
+        ).textContent = "---";
+
+        return;
+    }
+
+
+    const imu =
+        telemetry.imu;
+
+
+    document.getElementById(
+        "frame-accel"
+    ).textContent =
+        frameNumber(
+            imu.acceleration
+                .magnitude,
+            2
+        )
+        + " m/s²";
+
+
+    document.getElementById(
+        "frame-rate"
+    ).textContent =
+        frameNumber(
+            imu.angular_rate.x,
+            2
+        )
+        + " °/s";
+
+
+    document.getElementById(
+        "frame-pressure"
+    ).textContent =
+        frameNumber(
+            imu.pressure,
+            2
+        )
+        + " hPa";
+}
+
+
+async function captureFrame() {
+
+    captureButton.disabled =
+        true;
+
+    captureButton.textContent =
+        "ACQUIRING...";
+
+    payloadStatus.textContent =
+        "ACQUIRING";
+
 
     try {
 
-        const response = await fetch(
-            "/api/camera/capture",
-            {
-                method: "POST"
-            }
-        );
+        const response =
+            await fetch(
+                "/api/camera/capture",
+                {
+                    method: "POST"
+                }
+            );
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
-        if (data.status === "ok") {
 
-            cameraImage.src =
-                data.url + "?t=" + Date.now();
+        if (
+            !response.ok ||
+            data.status !== "ok"
+        ) {
 
-            await loadImages();
+            payloadStatus.textContent =
+                "FAULT";
+
+            return;
         }
 
-    } finally {
 
-        captureButton.disabled = false;
-        captureButton.textContent = "CAPTURE";
+        payloadStatus.textContent =
+            "FRAME ACQUIRED";
+
+
+        renderFrame(
+            data.frame
+        );
+
+
+        await loadFrames();
+
+    }
+
+    catch (error) {
+
+        payloadStatus.textContent =
+            "OFFLINE";
+    }
+
+    finally {
+
+        captureButton.disabled =
+            false;
+
+        captureButton.textContent =
+            "CAPTURE FRAME";
     }
 }
 
 
-async function loadImages() {
+async function loadFrames() {
 
-    const response =
-        await fetch("/api/camera/images");
+    try {
 
-    const data =
-        await response.json();
+        const response =
+            await fetch(
+                "/api/camera/images"
+            );
 
-    gallery.innerHTML = "";
+        const data =
+            await response.json();
 
-    for (const image of data.images) {
 
-        const element =
-            document.createElement("img");
+        cameraGallery.innerHTML =
+            "";
 
-        element.src = image.url;
 
-        element.className = "gallery-image";
+        if (
+            !data.frames ||
+            data.frames.length === 0
+        ) {
 
-        element.onclick = () => {
-            cameraImage.src = image.url;
-        };
+            payloadStatus.textContent =
+                "STANDBY";
 
-        gallery.appendChild(element);
+            return;
+        }
+
+
+        for (
+            const frame
+            of data.frames
+        ) {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "gallery-frame";
+
+
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+
+            image.src =
+                frame.url;
+
+
+            image.alt =
+                frame.frame_id
+                || "Helios frame";
+
+
+            button.appendChild(
+                image
+            );
+
+
+            button.addEventListener(
+                "click",
+                () => {
+                    renderFrame(
+                        frame
+                    );
+                }
+            );
+
+
+            cameraGallery.appendChild(
+                button
+            );
+        }
+
+
+        if (
+            !cameraImage.src
+        ) {
+
+            renderFrame(
+                data.frames[0]
+            );
+        }
+
+
+        payloadStatus.textContent =
+            "READY";
+
     }
 
+    catch (error) {
 
-    if (
-        data.images.length > 0 &&
-        !cameraImage.src
-    ) {
-        cameraImage.src =
-            data.images[0].url;
+        payloadStatus.textContent =
+            "OFFLINE";
     }
 }
 
 
 captureButton.addEventListener(
     "click",
-    captureImage
+    captureFrame
 );
 
 
-loadImages();
+loadFrames();

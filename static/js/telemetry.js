@@ -1,126 +1,270 @@
-function formatValue(value) {
-    if (typeof value !== "number") {
+function formatNumber(value, digits = 3) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        typeof value !== "number"
+    ) {
         return "—";
     }
 
-    return value.toFixed(3);
+    return value.toFixed(digits);
 }
 
 
-function setValue(id, value) {
-    document.getElementById(id).textContent =
-        formatValue(value);
+function setText(id, value) {
+
+    const element =
+        document.getElementById(id);
+
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+
+function formatUtc(timestamp) {
+
+    if (!timestamp) {
+        return "---";
+    }
+
+    const date =
+        new Date(timestamp);
+
+    return date.toISOString()
+        .substring(11, 23)
+        + "Z";
 }
 
 
 async function updateTelemetry() {
 
     const status =
-        document.getElementById("status");
+        document.getElementById(
+            "status"
+        );
 
     const error =
-        document.getElementById("error");
+        document.getElementById(
+            "error"
+        );
+
 
     try {
 
         const response =
-            await fetch("/api/telemetry");
+            await fetch(
+                "/api/telemetry"
+            );
 
         const data =
             await response.json();
 
 
-        if (data.status !== "online") {
+        if (
+            !response.ok ||
+            data.status !== "online"
+        ) {
 
-            status.textContent = "ERROR";
-            status.className = "status offline";
+            status.textContent =
+                "● OFFLINE";
+
+            status.className =
+                "status status-offline";
+
+            setText(
+                "mode",
+                "DEGRADED"
+            );
 
             error.textContent =
-                data.error || "Telemetry error";
+                data.error
+                || "Telemetry unavailable";
 
             return;
         }
 
 
-        status.textContent = "ONLINE";
-        status.className = "status online";
+        status.textContent =
+            "● ONLINE";
+
+        status.className =
+            "status status-online";
+
+
+        setText(
+            "mode",
+            data.mode
+        );
+
+
+        setText(
+            "packet-time",
+            formatUtc(
+                data.timestamp
+            )
+        );
+
+
+        setText(
+            "utc-time",
+            formatUtc(
+                data.timestamp
+            )
+        );
+
 
         error.textContent = "";
 
-        document.getElementById(
-            "timestamp"
-        ).textContent = data.timestamp;
+
+        const imu =
+            data.imu;
 
 
-        const imu = data.imu;
+        const acceleration =
+            imu.acceleration;
 
 
-        setValue(
+        setText(
             "accel-x",
-            imu.acceleration.x
+            formatNumber(
+                acceleration.x
+            )
         );
 
-        setValue(
+        setText(
             "accel-y",
-            imu.acceleration.y
+            formatNumber(
+                acceleration.y
+            )
         );
 
-        setValue(
+        setText(
             "accel-z",
-            imu.acceleration.z
+            formatNumber(
+                acceleration.z
+            )
         );
 
 
-        setValue(
-            "gyro-x",
-            imu.gyro.x
-        );
-
-        setValue(
-            "gyro-y",
-            imu.gyro.y
-        );
-
-        setValue(
-            "gyro-z",
-            imu.gyro.z
+        setText(
+            "accel-mag",
+            formatNumber(
+                acceleration.magnitude,
+                3
+            )
         );
 
 
-        setValue(
+        setText(
+            "accel-g",
+            formatNumber(
+                acceleration.g,
+                3
+            )
+        );
+
+
+        const rate =
+            imu.angular_rate;
+
+
+        setText(
+            "rate-x",
+            formatNumber(
+                rate.x
+            )
+        );
+
+        setText(
+            "rate-y",
+            formatNumber(
+                rate.y
+            )
+        );
+
+        setText(
+            "rate-z",
+            formatNumber(
+                rate.z
+            )
+        );
+
+
+        const magnetic =
+            imu.magnetic_field;
+
+
+        setText(
             "mag-x",
-            imu.magnetic.x
+            formatNumber(
+                magnetic.x
+            )
         );
 
-        setValue(
+        setText(
             "mag-y",
-            imu.magnetic.y
+            formatNumber(
+                magnetic.y
+            )
         );
 
-        setValue(
+        setText(
             "mag-z",
-            imu.magnetic.z
+            formatNumber(
+                magnetic.z
+            )
         );
 
 
-        setValue(
+        const magneticAvailable =
+            magnetic.x !== null ||
+            magnetic.y !== null ||
+            magnetic.z !== null;
+
+
+        setText(
+            "mag-status",
+            magneticAvailable
+                ? "ACTIVE"
+                : "NO DATA"
+        );
+
+
+        setText(
             "pressure",
-            imu.pressure
+            formatNumber(
+                imu.pressure,
+                2
+            )
         );
 
     }
 
-    catch (err) {
+    catch (exception) {
 
-        status.textContent = "OFFLINE";
-        status.className = "status offline";
+        status.textContent =
+            "● OFFLINE";
 
-        error.textContent = err.toString();
+        status.className =
+            "status status-offline";
+
+
+        setText(
+            "mode",
+            "DEGRADED"
+        );
+
+
+        error.textContent =
+            exception.toString();
     }
 }
 
 
 updateTelemetry();
+
 
 setInterval(
     updateTelemetry,
