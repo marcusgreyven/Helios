@@ -113,17 +113,150 @@
     <div class="vehicle-item">
 
         <span class="vehicle-label">
-            LAST PACKET
+            TELEMETRY
         </span>
 
         <span
-            id="packet-time"
+            id="telemetry-rate"
             class="vehicle-value mono"
         >
-            ---
+            --- Hz
         </span>
 
     </div>
+
+
+    <div class="vehicle-item">
+
+        <span class="vehicle-label">
+            PACKET AGE
+        </span>
+
+        <span
+            id="packet-age"
+            class="vehicle-value mono"
+        >
+            --- ms
+        </span>
+
+    </div>
+
+</section>
+
+
+
+<div class="section-title">
+
+    <span>
+        SYSTEM STATUS
+    </span>
+
+    <span class="section-code">
+        VEHICLE // HLS-01
+    </span>
+
+</div>
+
+
+
+<section class="systems-grid">
+
+
+    <div class="system-item">
+
+        <span>
+            FLIGHT COMPUTER
+        </span>
+
+        <strong
+            id="system-flight-computer"
+            class="system-state"
+        >
+            ---
+        </strong>
+
+    </div>
+
+
+    <div class="system-item">
+
+        <span>
+            ACCELEROMETER
+        </span>
+
+        <strong
+            id="system-accelerometer"
+            class="system-state"
+        >
+            ---
+        </strong>
+
+    </div>
+
+
+    <div class="system-item">
+
+        <span>
+            GYROSCOPE
+        </span>
+
+        <strong
+            id="system-gyroscope"
+            class="system-state"
+        >
+            ---
+        </strong>
+
+    </div>
+
+
+    <div class="system-item">
+
+        <span>
+            MAGNETOMETER
+        </span>
+
+        <strong
+            id="system-magnetometer"
+            class="system-state"
+        >
+            ---
+        </strong>
+
+    </div>
+
+
+    <div class="system-item">
+
+        <span>
+            BAROMETER
+        </span>
+
+        <strong
+            id="system-barometer"
+            class="system-state"
+        >
+            ---
+        </strong>
+
+    </div>
+
+
+    <div class="system-item">
+
+        <span>
+            OPTICAL PAYLOAD
+        </span>
+
+        <strong
+            id="system-optical-payload"
+            class="system-state"
+        >
+            ---
+        </strong>
+
+    </div>
+
 
 </section>
 
@@ -427,7 +560,7 @@
     <div class="payload-toolbar">
 
 
-        <div>
+        <div class="payload-identity">
 
             <div class="payload-name">
                 CAMERA SYSTEM
@@ -437,18 +570,92 @@
                 id="payload-status"
                 class="payload-status"
             >
-                STANDBY
+                INITIALIZING
             </div>
 
         </div>
 
 
-        <button
-            id="capture-button"
-            class="capture-button"
-        >
-            CAPTURE FRAME
-        </button>
+
+        <div class="payload-stats">
+
+
+            <div>
+
+                <span>
+                    FRAMES
+                </span>
+
+                <strong id="frame-count">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    ARCHIVE
+                </span>
+
+                <strong id="archive-size">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    FREE
+                </span>
+
+                <strong id="storage-free">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    LAST FRAME
+                </span>
+
+                <strong id="last-frame-time">
+                    ---
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="payload-actions">
+
+
+            <button
+                id="clear-archive-button"
+                class="danger-button"
+            >
+                CLEAR ARCHIVE
+            </button>
+
+
+            <button
+                id="capture-button"
+                class="capture-button"
+            >
+                CAPTURE FRAME
+            </button>
+
+
+        </div>
 
 
     </div>
@@ -572,6 +779,67 @@
 
 
 </main>
+
+
+
+<div
+    id="archive-modal"
+    class="modal-backdrop"
+>
+
+
+    <div class="modal">
+
+
+        <div class="modal-code">
+            OPTICAL PAYLOAD // ARCHIVE
+        </div>
+
+
+        <h2>
+            DELETE OPTICAL ARCHIVE?
+        </h2>
+
+
+        <p>
+
+            <span id="modal-frame-count">
+                0
+            </span>
+
+            frames and their telemetry
+            metadata will be permanently
+            removed from the flight computer.
+
+        </p>
+
+
+        <div class="modal-actions">
+
+
+            <button
+                id="cancel-delete-button"
+                class="secondary-button"
+            >
+                CANCEL
+            </button>
+
+
+            <button
+                id="confirm-delete-button"
+                class="confirm-danger-button"
+            >
+                DELETE ARCHIVE
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
 
 
 

@@ -1,4 +1,14 @@
-function formatNumber(value, digits = 3) {
+let lastPacketReceivedAt = null;
+
+let packetCounter = 0;
+
+let telemetryRate = 0;
+
+
+function formatNumber(
+    value,
+    digits = 3
+) {
 
     if (
         value === null ||
@@ -8,11 +18,16 @@ function formatNumber(value, digits = 3) {
         return "—";
     }
 
-    return value.toFixed(digits);
+    return value.toFixed(
+        digits
+    );
 }
 
 
-function setText(id, value) {
+function setText(
+    id,
+    value
+) {
 
     const element =
         document.getElementById(id);
@@ -23,18 +38,71 @@ function setText(id, value) {
 }
 
 
-function formatUtc(timestamp) {
+function formatUtc(
+    timestamp
+) {
 
     if (!timestamp) {
         return "---";
     }
 
-    const date =
-        new Date(timestamp);
-
-    return date.toISOString()
+    return new Date(
+        timestamp
+    )
+        .toISOString()
         .substring(11, 23)
         + "Z";
+}
+
+
+function setSystemState(
+    id,
+    state
+) {
+
+    const element =
+        document.getElementById(id);
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent =
+        state;
+
+
+    element.className =
+        "system-state";
+
+
+    if (
+        state === "NOMINAL" ||
+        state === "READY"
+    ) {
+
+        element.classList.add(
+            "state-nominal"
+        );
+
+        return;
+    }
+
+
+    if (
+        state === "NO DATA"
+    ) {
+
+        element.classList.add(
+            "state-no-data"
+        );
+
+        return;
+    }
+
+
+    element.classList.add(
+        "state-fault"
+    );
 }
 
 
@@ -55,8 +123,12 @@ async function updateTelemetry() {
 
         const response =
             await fetch(
-                "/api/telemetry"
+                "/api/telemetry",
+                {
+                    cache: "no-store"
+                }
             );
+
 
         const data =
             await response.json();
@@ -73,17 +145,26 @@ async function updateTelemetry() {
             status.className =
                 "status status-offline";
 
+
             setText(
                 "mode",
                 "DEGRADED"
             );
 
+
             error.textContent =
                 data.error
                 || "Telemetry unavailable";
 
+
             return;
         }
+
+
+        lastPacketReceivedAt =
+            performance.now();
+
+        packetCounter += 1;
 
 
         status.textContent =
@@ -100,14 +181,6 @@ async function updateTelemetry() {
 
 
         setText(
-            "packet-time",
-            formatUtc(
-                data.timestamp
-            )
-        );
-
-
-        setText(
             "utc-time",
             formatUtc(
                 data.timestamp
@@ -115,7 +188,43 @@ async function updateTelemetry() {
         );
 
 
-        error.textContent = "";
+        error.textContent =
+            "";
+
+
+        const systems =
+            data.systems;
+
+
+        setSystemState(
+            "system-flight-computer",
+            systems.flight_computer
+        );
+
+        setSystemState(
+            "system-accelerometer",
+            systems.accelerometer
+        );
+
+        setSystemState(
+            "system-gyroscope",
+            systems.gyroscope
+        );
+
+        setSystemState(
+            "system-magnetometer",
+            systems.magnetometer
+        );
+
+        setSystemState(
+            "system-barometer",
+            systems.barometer
+        );
+
+        setSystemState(
+            "system-optical-payload",
+            systems.optical_payload
+        );
 
 
         const imu =
@@ -151,8 +260,7 @@ async function updateTelemetry() {
         setText(
             "accel-mag",
             formatNumber(
-                acceleration.magnitude,
-                3
+                acceleration.magnitude
             )
         );
 
@@ -160,8 +268,7 @@ async function updateTelemetry() {
         setText(
             "accel-g",
             formatNumber(
-                acceleration.g,
-                3
+                acceleration.g
             )
         );
 
@@ -261,6 +368,76 @@ async function updateTelemetry() {
             exception.toString();
     }
 }
+
+
+function updatePacketAge() {
+
+    if (
+        lastPacketReceivedAt === null
+    ) {
+
+        setText(
+            "packet-age",
+            "--- ms"
+        );
+
+        return;
+    }
+
+
+    const age =
+        performance.now()
+        - lastPacketReceivedAt;
+
+
+    setText(
+        "packet-age",
+        Math.round(age)
+        + " ms"
+    );
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    if (age > 1500) {
+
+        status.textContent =
+            "● LINK LOST";
+
+        status.className =
+            "status status-offline";
+    }
+}
+
+
+setInterval(
+    () => {
+
+        telemetryRate =
+            packetCounter;
+
+        packetCounter = 0;
+
+
+        setText(
+            "telemetry-rate",
+            telemetryRate
+            + " Hz"
+        );
+
+    },
+    1000
+);
+
+
+setInterval(
+    updatePacketAge,
+    50
+);
 
 
 updateTelemetry();

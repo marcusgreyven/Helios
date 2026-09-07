@@ -15,12 +15,15 @@ STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 CAPTURES_DIR = BASE_DIR / "captures"
 
-CAPTURES_DIR.mkdir(parents=True, exist_ok=True)
+CAPTURES_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
 
 
 app = FastAPI(
     title="Helios Flight Control",
-    version="0.2"
+    version="0.3"
 )
 
 
@@ -46,13 +49,20 @@ camera = None
 camera_error = None
 
 try:
-    camera = HeliosCamera(CAPTURES_DIR)
+    camera = HeliosCamera(
+        CAPTURES_DIR
+    )
+
 except Exception as error:
     camera_error = str(error)
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get(
+    "/",
+    response_class=HTMLResponse
+)
 async def index(request: Request):
+
     return templates.TemplateResponse(
         request=request,
         name="index.html"
@@ -61,54 +71,103 @@ async def index(request: Request):
 
 @app.get("/api/telemetry")
 async def telemetry():
+
+    timestamp = datetime.now(
+        timezone.utc
+    ).isoformat()
+
     try:
+
         data = get_telemetry()
 
         return {
             "status": "online",
             "vehicle": "HLS-01",
             "mode": "NOMINAL",
-            "timestamp": datetime.now(
-                timezone.utc
-            ).isoformat(),
+            "timestamp": timestamp,
+
+            "systems": {
+                "flight_computer": "NOMINAL",
+                "accelerometer": "NOMINAL",
+                "gyroscope": "NOMINAL",
+                "magnetometer": "NO DATA",
+                "barometer": "NOMINAL",
+                "optical_payload":
+                    "READY"
+                    if camera is not None
+                    else "FAULT"
+            },
+
             **data
         }
 
     except Exception as error:
+
         return {
             "status": "error",
             "vehicle": "HLS-01",
             "mode": "DEGRADED",
-            "timestamp": datetime.now(
-                timezone.utc
-            ).isoformat(),
-            "error": str(error)
+            "timestamp": timestamp,
+            "error": str(error),
+
+            "systems": {
+                "flight_computer": "NOMINAL",
+                "accelerometer": "FAULT",
+                "gyroscope": "FAULT",
+                "magnetometer": "NO DATA",
+                "barometer": "FAULT",
+                "optical_payload":
+                    "READY"
+                    if camera is not None
+                    else "FAULT"
+            }
         }
 
 
 @app.get("/api/camera/status")
 async def camera_status():
+
     if camera is None:
+
         return {
             "status": "offline",
-            "error": camera_error
+            "error":
+                camera_error
+                or "Camera unavailable"
         }
 
-    return {
-        "status": "online"
-    }
+    try:
+
+        return {
+            "status": "online",
+            **camera.get_status()
+        }
+
+    except Exception as error:
+
+        return {
+            "status": "error",
+            "error": str(error)
+        }
 
 
 @app.post("/api/camera/capture")
 def capture_image():
+
     if camera is None:
+
         return {
             "status": "error",
-            "error": camera_error or "Camera unavailable"
+            "error":
+                camera_error
+                or "Camera unavailable"
         }
 
     try:
-        telemetry_snapshot = get_telemetry()
+
+        telemetry_snapshot = (
+            get_telemetry()
+        )
 
         frame = camera.capture(
             telemetry_snapshot
@@ -120,6 +179,7 @@ def capture_image():
         }
 
     except Exception as error:
+
         return {
             "status": "error",
             "error": str(error)
@@ -128,19 +188,64 @@ def capture_image():
 
 @app.get("/api/camera/images")
 def camera_images():
+
     if camera is None:
+
         return {
             "status": "offline",
             "frames": []
         }
 
-    return {
-        "status": "online",
-        "frames": camera.list_frames()
-    }
+    try:
+
+        return {
+            "status": "online",
+            "frames":
+                camera.list_frames()
+        }
+
+    except Exception as error:
+
+        return {
+            "status": "error",
+            "frames": [],
+            "error": str(error)
+        }
+
+
+@app.delete("/api/camera/frames")
+def clear_camera_archive():
+
+    if camera is None:
+
+        return {
+            "status": "error",
+            "error":
+                camera_error
+                or "Camera unavailable"
+        }
+
+    try:
+
+        result = (
+            camera.clear_archive()
+        )
+
+        return {
+            "status": "ok",
+            **result
+        }
+
+    except Exception as error:
+
+        return {
+            "status": "error",
+            "error": str(error)
+        }
 
 
 if __name__ == "__main__":
+
     import uvicorn
 
     uvicorn.run(

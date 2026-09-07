@@ -1,17 +1,24 @@
 :root {
     --background: #05080c;
+
     --surface: #090d12;
+
     --surface-raised: #0d1218;
 
     --border: #202832;
+
     --border-bright: #303b47;
 
     --text: #f4f7fa;
+
     --muted: #7f8a96;
+
     --dim: #515b66;
 
     --online: #61e98a;
+
     --warning: #e6b85c;
+
     --error: #ff6767;
 }
 
@@ -24,6 +31,7 @@
 html,
 body {
     margin: 0;
+
     min-height: 100%;
 
     background:
@@ -44,6 +52,11 @@ body {
 }
 
 
+button {
+    font-family: inherit;
+}
+
+
 .topbar {
     height: 92px;
 
@@ -51,14 +64,17 @@ body {
         0 34px;
 
     display: flex;
-    align-items: center;
-    justify-content: space-between;
 
-    border-bottom:
-        1px solid var(--border);
+    align-items: center;
+
+    justify-content:
+        space-between;
 
     background:
         #06090d;
+
+    border-bottom:
+        1px solid var(--border);
 }
 
 
@@ -123,13 +139,16 @@ main {
     display: grid;
 
     grid-template-columns:
-        repeat(4, 1fr);
-
-    border:
-        1px solid var(--border);
+        repeat(
+            5,
+            1fr
+        );
 
     background:
         var(--surface);
+
+    border:
+        1px solid var(--border);
 }
 
 
@@ -204,7 +223,8 @@ main {
 
     display: flex;
 
-    justify-content: space-between;
+    justify-content:
+        space-between;
 
     color:
         var(--muted);
@@ -223,11 +243,101 @@ main {
 }
 
 
+.systems-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            1fr
+        );
+
+    border:
+        1px solid var(--border);
+
+    background:
+        var(--surface);
+}
+
+
+.system-item {
+    min-height: 58px;
+
+    padding:
+        13px 16px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content:
+        space-between;
+
+    border-right:
+        1px solid var(--border);
+
+    border-bottom:
+        1px solid var(--border);
+}
+
+
+.system-item:nth-child(3n) {
+    border-right: 0;
+}
+
+
+.system-item:nth-last-child(-n+3) {
+    border-bottom: 0;
+}
+
+
+.system-item > span {
+    color:
+        var(--muted);
+
+    font-size: 9px;
+
+    font-weight: 600;
+
+    letter-spacing: 1.2px;
+}
+
+
+.system-state {
+    font-size: 9px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+}
+
+
+.state-nominal {
+    color:
+        var(--online);
+}
+
+
+.state-no-data {
+    color:
+        var(--warning);
+}
+
+
+.state-fault {
+    color:
+        var(--error);
+}
+
+
 .telemetry-grid {
     display: grid;
 
     grid-template-columns:
-        repeat(4, minmax(0, 1fr));
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
 
     gap: 12px;
 }
@@ -236,8 +346,7 @@ main {
 .telemetry-card {
     min-height: 200px;
 
-    padding:
-        20px;
+    padding: 20px;
 
     background:
         var(--surface-raised);
@@ -245,15 +354,15 @@ main {
     border:
         1px solid var(--border);
 
-    border-radius:
-        2px;
+    border-radius: 2px;
 }
 
 
 .card-header {
     display: flex;
 
-    justify-content: space-between;
+    justify-content:
+        space-between;
 
     color:
         var(--muted);
@@ -293,7 +402,8 @@ main {
 }
 
 
-.primary-metric > span:first-child {
+.primary-metric
+> span:first-child {
     font-size: 30px;
 
     letter-spacing: -1px;
@@ -388,9 +498,9 @@ main {
     margin-top: 30px;
 
     color:
-        var(--dim);
+        var(--warning);
 
-    font-size: 20px;
+    font-size: 19px;
 
     font-weight: 600;
 
@@ -404,23 +514,28 @@ main {
 
 
 .payload-panel {
-    border:
-        1px solid var(--border);
-
     background:
         var(--surface);
+
+    border:
+        1px solid var(--border);
 }
 
 
 .payload-toolbar {
-    min-height: 72px;
+    min-height: 82px;
 
     padding:
-        16px 20px;
+        15px 20px;
 
-    display: flex;
+    display: grid;
 
-    justify-content: space-between;
+    grid-template-columns:
+        auto
+        minmax(450px, 1fr)
+        auto;
+
+    gap: 30px;
 
     align-items: center;
 
@@ -445,7 +560,7 @@ main {
     margin-top: 5px;
 
     color:
-        var(--muted);
+        var(--online);
 
     font-size: 9px;
 
@@ -453,21 +568,65 @@ main {
 }
 
 
-.capture-button {
-    padding:
-        11px 18px;
+.payload-stats {
+    display: grid;
 
-    background:
-        var(--text);
+    grid-template-columns:
+        repeat(4, 1fr);
 
+    gap: 20px;
+}
+
+
+.payload-stats > div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+
+.payload-stats span {
     color:
-        #05080c;
+        var(--dim);
 
-    border:
-        1px solid var(--text);
+    font-size: 8px;
 
-    border-radius:
-        1px;
+    font-weight: 600;
+
+    letter-spacing: 1.2px;
+}
+
+
+.payload-stats strong {
+    font-family:
+        Consolas,
+        monospace;
+
+    font-size: 11px;
+
+    font-weight: 400;
+}
+
+
+.payload-actions {
+    display: flex;
+
+    gap: 8px;
+}
+
+
+.capture-button,
+.danger-button,
+.secondary-button,
+.confirm-danger-button {
+    min-height: 36px;
+
+    padding:
+        10px 16px;
+
+    border-radius: 1px;
 
     font-size: 9px;
 
@@ -476,10 +635,18 @@ main {
     letter-spacing: 1px;
 
     cursor: pointer;
+}
 
-    transition:
-        background 0.15s,
-        color 0.15s;
+
+.capture-button {
+    background:
+        var(--text);
+
+    color:
+        #05080c;
+
+    border:
+        1px solid var(--text);
 }
 
 
@@ -492,12 +659,45 @@ main {
 }
 
 
-.capture-button:disabled {
+.danger-button {
+    background:
+        transparent;
+
+    color:
+        var(--error);
+
+    border:
+        1px solid
+        rgba(
+            255,
+            103,
+            103,
+            0.55
+        );
+}
+
+
+.danger-button:hover {
+    background:
+        rgba(
+            255,
+            103,
+            103,
+            0.08
+        );
+
+    border-color:
+        var(--error);
+}
+
+
+.capture-button:disabled,
+.danger-button:disabled,
+.confirm-danger-button:disabled {
     cursor:
         not-allowed;
 
-    opacity:
-        0.5;
+    opacity: 0.35;
 }
 
 
@@ -533,7 +733,7 @@ main {
 
     height: 100%;
 
-    max-height: 680px;
+    max-height: 720px;
 
     display: none;
 
@@ -542,6 +742,18 @@ main {
 
 
 .no-frame {
+    width: 100%;
+
+    height: 100%;
+
+    min-height: 540px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
     color:
         var(--dim);
 
@@ -552,14 +764,13 @@ main {
 
 
 .frame-data {
-    padding:
-        22px;
-
-    border-left:
-        1px solid var(--border);
+    padding: 22px;
 
     background:
         #080c11;
+
+    border-left:
+        1px solid var(--border);
 }
 
 
@@ -613,16 +824,14 @@ main {
 
     font-weight: 400;
 
-    overflow-wrap:
-        anywhere;
+    overflow-wrap: anywhere;
 }
 
 
 .camera-gallery {
     min-height: 104px;
 
-    padding:
-        12px;
+    padding: 12px;
 
     display: flex;
 
@@ -683,8 +892,172 @@ main {
 }
 
 
+.modal-backdrop {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 100;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            0.78
+        );
+
+    backdrop-filter:
+        blur(4px);
+}
+
+
+.modal-visible {
+    display: flex;
+}
+
+
+.modal {
+    width: 100%;
+
+    max-width: 470px;
+
+    padding: 28px;
+
+    background:
+        #090d12;
+
+    border:
+        1px solid
+        var(--border-bright);
+}
+
+
+.modal-code {
+    color:
+        var(--dim);
+
+    font-size: 8px;
+
+    letter-spacing: 1.5px;
+}
+
+
+.modal h2 {
+    margin:
+        15px 0 12px;
+
+    font-size: 16px;
+
+    letter-spacing: 1px;
+}
+
+
+.modal p {
+    margin: 0;
+
+    color:
+        var(--muted);
+
+    font-size: 12px;
+
+    line-height: 1.7;
+}
+
+
+.modal-actions {
+    margin-top: 28px;
+
+    display: flex;
+
+    justify-content:
+        flex-end;
+
+    gap: 8px;
+}
+
+
+.secondary-button {
+    background:
+        transparent;
+
+    color:
+        var(--muted);
+
+    border:
+        1px solid var(--border);
+}
+
+
+.secondary-button:hover {
+    color:
+        var(--text);
+
+    border-color:
+        var(--border-bright);
+}
+
+
+.confirm-danger-button {
+    background:
+        var(--error);
+
+    color:
+        #08090b;
+
+    border:
+        1px solid var(--error);
+}
+
+
+.confirm-danger-button:hover {
+    background:
+        transparent;
+
+    color:
+        var(--error);
+}
+
+
 @media (
-    max-width: 1100px
+    max-width: 1250px
+) {
+
+    .vehicle-strip {
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+
+
+    .payload-toolbar {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .payload-stats {
+        max-width: 600px;
+    }
+
+
+    .payload-actions {
+        justify-content:
+            flex-start;
+    }
+
+}
+
+
+@media (
+    max-width: 1050px
 ) {
 
     .telemetry-grid {
@@ -710,7 +1083,7 @@ main {
 
 
 @media (
-    max-width: 700px
+    max-width: 750px
 ) {
 
     .topbar {
@@ -727,18 +1100,34 @@ main {
 
     .vehicle-strip {
         grid-template-columns:
-            repeat(2, 1fr);
+            1fr 1fr;
     }
 
 
-    .vehicle-item:nth-child(2) {
+    .systems-grid {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+
+    .system-item,
+    .system-item:nth-child(3n),
+    .system-item:nth-last-child(-n+3) {
+        border-right:
+            1px solid var(--border);
+
+        border-bottom:
+            1px solid var(--border);
+    }
+
+
+    .system-item:nth-child(2n) {
         border-right: 0;
     }
 
 
-    .vehicle-item:nth-child(-n+2) {
-        border-bottom:
-            1px solid var(--border);
+    .system-item:nth-last-child(-n+2) {
+        border-bottom: 0;
     }
 
 
@@ -748,9 +1137,20 @@ main {
     }
 
 
-    .camera-view {
-        min-height:
-            300px;
+    .payload-stats {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+
+    .payload-actions {
+        flex-direction: column;
+    }
+
+
+    .camera-view,
+    .no-frame {
+        min-height: 300px;
     }
 
 

@@ -1,4 +1,5 @@
 import json
+import shutil
 import threading
 import time
 
@@ -10,28 +11,45 @@ from picamera2 import Picamera2
 
 class HeliosCamera:
 
-    def __init__(self, capture_dir):
+    SENSOR = "OV5647"
 
-        self.capture_dir = Path(capture_dir)
+    RESOLUTION = (
+        2592,
+        1944
+    )
+
+
+    def __init__(
+        self,
+        capture_dir
+    ):
+
+        self.capture_dir = Path(
+            capture_dir
+        )
 
         self.capture_dir.mkdir(
             parents=True,
             exist_ok=True
         )
 
-        self.lock = threading.Lock()
+        self.lock = (
+            threading.Lock()
+        )
 
-        self.camera = Picamera2()
-
-        # Максимальное нативное разрешение OV5647
-        self.resolution = (2592, 1944)
+        self.camera = (
+            Picamera2()
+        )
 
         configuration = (
             self.camera
             .create_still_configuration(
                 main={
-                    "size": self.resolution,
-                    "format": "RGB888"
+                    "size":
+                        self.RESOLUTION,
+
+                    "format":
+                        "RGB888"
                 }
             )
         )
@@ -40,16 +58,20 @@ class HeliosCamera:
             configuration
         )
 
-        # Максимальное рекомендуемое JPEG quality
-        self.camera.options["quality"] = 95
+        self.camera.options[
+            "quality"
+        ] = 95
 
         self.camera.start()
 
-        # Даём автоэкспозиции и балансу белого стабилизироваться
+        # AE / AWB stabilization
         time.sleep(2)
 
 
-    def capture(self, telemetry):
+    def capture(
+        self,
+        telemetry
+    ):
 
         with self.lock:
 
@@ -64,15 +86,18 @@ class HeliosCamera:
             )
 
             frame_id = (
-                f"HLS-CAM-{timestamp_file}"
+                "HLS-CAM-"
+                + timestamp_file
             )
 
             image_filename = (
-                f"{frame_id}.jpg"
+                frame_id
+                + ".jpg"
             )
 
             metadata_filename = (
-                f"{frame_id}.json"
+                frame_id
+                + ".json"
             )
 
             image_path = (
@@ -85,14 +110,15 @@ class HeliosCamera:
                 / metadata_filename
             )
 
-            camera_metadata = (
-                self.camera.capture_file(
-                    str(image_path)
-                )
+
+            self.camera.capture_file(
+                str(image_path)
             )
 
+
             metadata = {
-                "frame_id": frame_id,
+                "frame_id":
+                    frame_id,
 
                 "filename":
                     image_filename,
@@ -101,23 +127,25 @@ class HeliosCamera:
                     now.isoformat(),
 
                 "camera": {
-                    "sensor": "OV5647",
+                    "sensor":
+                        self.SENSOR,
 
                     "resolution": {
                         "width":
-                            self.resolution[0],
+                            self.RESOLUTION[0],
 
                         "height":
-                            self.resolution[1]
+                            self.RESOLUTION[1]
                     },
 
-                    "metadata":
-                        camera_metadata
+                    "jpeg_quality":
+                        95
                 },
 
                 "telemetry":
                     telemetry
             }
+
 
             with metadata_path.open(
                 "w",
@@ -132,29 +160,13 @@ class HeliosCamera:
                     default=str
                 )
 
-            return {
-                "frame_id":
-                    frame_id,
 
-                "filename":
-                    image_filename,
+            return {
+                **metadata,
 
                 "url":
-                    f"/captures/{image_filename}",
-
-                "captured_at":
-                    now.isoformat(),
-
-                "resolution": {
-                    "width":
-                        self.resolution[0],
-
-                    "height":
-                        self.resolution[1]
-                },
-
-                "telemetry":
-                    telemetry
+                    "/captures/"
+                    + image_filename
             }
 
 
@@ -170,6 +182,7 @@ class HeliosCamera:
 
             reverse=True
         )
+
 
         frames = []
 
@@ -199,6 +212,7 @@ class HeliosCamera:
                 except Exception:
                     metadata = None
 
+
             frame = {
                 "frame_id":
                     image.stem,
@@ -207,16 +221,177 @@ class HeliosCamera:
                     image.name,
 
                 "url":
-                    f"/captures/{image.name}"
+                    "/captures/"
+                    + image.name
             }
 
+
             if metadata:
+
                 frame.update(
                     metadata
                 )
+
+                frame["url"] = (
+                    "/captures/"
+                    + image.name
+                )
+
 
             frames.append(
                 frame
             )
 
+
         return frames
+
+
+    def get_status(self):
+
+        images = list(
+            self.capture_dir.glob(
+                "*.jpg"
+            )
+        )
+
+        metadata_files = list(
+            self.capture_dir.glob(
+                "*.json"
+            )
+        )
+
+
+        archive_bytes = 0
+
+        for file in (
+            images
+            + metadata_files
+        ):
+
+            try:
+
+                archive_bytes += (
+                    file.stat()
+                    .st_size
+                )
+
+            except OSError:
+                pass
+
+
+        last_frame = None
+
+        if images:
+
+            newest = max(
+                images,
+                key=lambda image:
+                    image.stat().st_mtime
+            )
+
+            last_frame = {
+                "filename":
+                    newest.name,
+
+                "timestamp":
+                    datetime.fromtimestamp(
+                        newest.stat().st_mtime,
+                        tz=timezone.utc
+                    ).isoformat()
+            }
+
+
+        disk = shutil.disk_usage(
+            self.capture_dir
+        )
+
+
+        return {
+            "sensor":
+                self.SENSOR,
+
+            "resolution": {
+                "width":
+                    self.RESOLUTION[0],
+
+                "height":
+                    self.RESOLUTION[1]
+            },
+
+            "frame_count":
+                len(images),
+
+            "archive_bytes":
+                archive_bytes,
+
+            "disk": {
+                "total_bytes":
+                    disk.total,
+
+                "used_bytes":
+                    disk.used,
+
+                "free_bytes":
+                    disk.free
+            },
+
+            "last_frame":
+                last_frame
+        }
+
+
+    def clear_archive(self):
+
+        with self.lock:
+
+            image_files = list(
+                self.capture_dir.glob(
+                    "*.jpg"
+                )
+            )
+
+            metadata_files = list(
+                self.capture_dir.glob(
+                    "*.json"
+                )
+            )
+
+
+            deleted_frames = (
+                len(image_files)
+            )
+
+            deleted_files = 0
+            freed_bytes = 0
+
+
+            for file in (
+                image_files
+                + metadata_files
+            ):
+
+                try:
+
+                    freed_bytes += (
+                        file.stat()
+                        .st_size
+                    )
+
+                    file.unlink()
+
+                    deleted_files += 1
+
+                except FileNotFoundError:
+                    pass
+
+
+            return {
+                "deleted_frames":
+                    deleted_frames,
+
+                "deleted_files":
+                    deleted_files,
+
+                "freed_bytes":
+                    freed_bytes
+            }
