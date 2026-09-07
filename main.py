@@ -1,14 +1,12 @@
-from datetime import datetime, timezone
-from pathlib import Path
-from camera import HeliosCamera
-
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from telemetry import get_telemetry
-
+from datetime import datetime, timezone
+from pathlib import Path
+from camera import HeliosCamera
 
 app = FastAPI(
     title="Helios",
