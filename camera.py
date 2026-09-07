@@ -1,5 +1,6 @@
 import json
 import threading
+import time
 
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,9 +12,7 @@ class HeliosCamera:
 
     def __init__(self, capture_dir):
 
-        self.capture_dir = Path(
-            capture_dir
-        )
+        self.capture_dir = Path(capture_dir)
 
         self.capture_dir.mkdir(
             parents=True,
@@ -24,11 +23,15 @@ class HeliosCamera:
 
         self.camera = Picamera2()
 
+        # Максимальное нативное разрешение OV5647
+        self.resolution = (2592, 1944)
+
         configuration = (
             self.camera
             .create_still_configuration(
                 main={
-                    "size": (1920, 1080)
+                    "size": self.resolution,
+                    "format": "RGB888"
                 }
             )
         )
@@ -37,7 +40,13 @@ class HeliosCamera:
             configuration
         )
 
+        # Максимальное рекомендуемое JPEG quality
+        self.camera.options["quality"] = 95
+
         self.camera.start()
+
+        # Даём автоэкспозиции и балансу белого стабилизироваться
+        time.sleep(2)
 
 
     def capture(self, telemetry):
@@ -76,11 +85,11 @@ class HeliosCamera:
                 / metadata_filename
             )
 
-
-            self.camera.capture_file(
-                str(image_path)
+            camera_metadata = (
+                self.camera.capture_file(
+                    str(image_path)
+                )
             )
-
 
             metadata = {
                 "frame_id": frame_id,
@@ -91,10 +100,24 @@ class HeliosCamera:
                 "captured_at":
                     now.isoformat(),
 
+                "camera": {
+                    "sensor": "OV5647",
+
+                    "resolution": {
+                        "width":
+                            self.resolution[0],
+
+                        "height":
+                            self.resolution[1]
+                    },
+
+                    "metadata":
+                        camera_metadata
+                },
+
                 "telemetry":
                     telemetry
             }
-
 
             with metadata_path.open(
                 "w",
@@ -105,9 +128,9 @@ class HeliosCamera:
                     metadata,
                     file,
                     ensure_ascii=False,
-                    indent=2
+                    indent=2,
+                    default=str
                 )
-
 
             return {
                 "frame_id":
@@ -122,6 +145,14 @@ class HeliosCamera:
                 "captured_at":
                     now.isoformat(),
 
+                "resolution": {
+                    "width":
+                        self.resolution[0],
+
+                    "height":
+                        self.resolution[1]
+                },
+
                 "telemetry":
                     telemetry
             }
@@ -133,11 +164,12 @@ class HeliosCamera:
             self.capture_dir.glob(
                 "*.jpg"
             ),
+
             key=lambda image:
                 image.stat().st_mtime,
+
             reverse=True
         )
-
 
         frames = []
 
@@ -152,7 +184,9 @@ class HeliosCamera:
             metadata = None
 
             if metadata_path.exists():
+
                 try:
+
                     with metadata_path.open(
                         "r",
                         encoding="utf-8"
@@ -165,7 +199,6 @@ class HeliosCamera:
                 except Exception:
                     metadata = None
 
-
             frame = {
                 "frame_id":
                     image.stem,
@@ -177,16 +210,13 @@ class HeliosCamera:
                     f"/captures/{image.name}"
             }
 
-
             if metadata:
                 frame.update(
                     metadata
                 )
 
-
             frames.append(
                 frame
             )
-
 
         return frames
