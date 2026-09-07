@@ -1,50 +1,25 @@
-const captureButton =
-    document.getElementById(
-        "capture-button"
+let lastPacketReceivedAt = null;
+
+let packetCounter = 0;
+
+
+function formatNumber(
+    value,
+    digits = 3
+) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        typeof value !== "number"
+    ) {
+        return "—";
+    }
+
+    return value.toFixed(
+        digits
     );
-
-const clearArchiveButton =
-    document.getElementById(
-        "clear-archive-button"
-    );
-
-const confirmDeleteButton =
-    document.getElementById(
-        "confirm-delete-button"
-    );
-
-const cancelDeleteButton =
-    document.getElementById(
-        "cancel-delete-button"
-    );
-
-const archiveModal =
-    document.getElementById(
-        "archive-modal"
-    );
-
-const cameraImage =
-    document.getElementById(
-        "camera-image"
-    );
-
-const cameraGallery =
-    document.getElementById(
-        "camera-gallery"
-    );
-
-const payloadStatus =
-    document.getElementById(
-        "payload-status"
-    );
-
-const noFrame =
-    document.getElementById(
-        "no-frame"
-    );
-
-
-let currentFrameCount = 0;
+}
 
 
 function setText(
@@ -58,25 +33,6 @@ function setText(
     if (element) {
         element.textContent = value;
     }
-}
-
-
-function formatValue(
-    value,
-    digits = 3
-) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        typeof value !== "number"
-    ) {
-        return "---";
-    }
-
-    return value.toFixed(
-        digits
-    );
 }
 
 
@@ -97,509 +53,255 @@ function formatUtc(
 }
 
 
-function formatBytes(
-    bytes
+function setSystemState(
+    id,
+    state
 ) {
+
+    const element =
+        document.getElementById(id);
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent =
+        state;
+
+    element.className =
+        "system-state";
+
 
     if (
-        bytes === null ||
-        bytes === undefined
-    ) {
-        return "---";
-    }
-
-
-    const units = [
-        "B",
-        "KB",
-        "MB",
-        "GB",
-        "TB"
-    ];
-
-
-    let value = bytes;
-    let unitIndex = 0;
-
-
-    while (
-        value >= 1024 &&
-        unitIndex <
-        units.length - 1
+        state === "NOMINAL"
+        || state === "READY"
+        || state === "ACTIVE"
     ) {
 
-        value /= 1024;
-        unitIndex += 1;
-    }
+        element.classList.add(
+            "state-nominal"
+        );
 
-
-    const digits =
-        value >= 100
-            ? 0
-            : value >= 10
-                ? 1
-                : 2;
-
-
-    return (
-        value.toFixed(digits)
-        + " "
-        + units[unitIndex]
-    );
-}
-
-
-function renderFrame(
-    frame
-) {
-
-    if (!frame) {
         return;
     }
 
 
-    cameraImage.src =
-        frame.url
-        + "?t="
-        + Date.now();
+    if (
+        state === "NO DATA"
+    ) {
+
+        element.classList.add(
+            "state-no-data"
+        );
+
+        return;
+    }
 
 
-    cameraImage.style.display =
-        "block";
+    element.classList.add(
+        "state-fault"
+    );
+}
 
-    noFrame.style.display =
-        "none";
+
+function setModeState(
+    mode
+) {
+
+    const element =
+        document.getElementById(
+            "mode"
+        );
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent =
+        mode;
+
+    element.className =
+        "mode-state";
+
+
+    const classMap = {
+        "BOOT":
+            "mode-boot",
+
+        "STANDBY":
+            "mode-standby",
+
+        "NOMINAL":
+            "mode-nominal",
+
+        "PAYLOAD":
+            "mode-payload",
+
+        "SAFE":
+            "mode-safe"
+    };
+
+
+    const className =
+        classMap[mode];
+
+    if (className) {
+        element.classList.add(
+            className
+        );
+    }
+
+
+    document
+        .querySelectorAll(
+            ".mode-command"
+        )
+        .forEach(
+            button => {
+
+                button.classList.toggle(
+                    "mode-command-active",
+                    button.dataset.mode
+                    === mode
+                );
+            }
+        );
+}
+
+
+function updateAttitude(
+    attitude
+) {
+
+    if (!attitude) {
+        return;
+    }
 
 
     setText(
-        "frame-name",
-        frame.frame_id
+        "attitude-roll",
+        formatNumber(
+            attitude.roll,
+            2
+        )
+    );
+
+    setText(
+        "attitude-pitch",
+        formatNumber(
+            attitude.pitch,
+            2
+        )
+    );
+
+    setText(
+        "attitude-yaw",
+        (
+            typeof attitude.yaw
+            === "number"
+        )
+            ? formatNumber(
+                attitude.yaw,
+                2
+            ) + "°"
+            : "NO SOLUTION"
+    );
+
+    setText(
+        "attitude-rate",
+        formatNumber(
+            attitude.rate_magnitude,
+            2
+        )
+    );
+
+    setText(
+        "attitude-solution",
+        attitude.solution
+        || "---"
+    );
+
+    setText(
+        "attitude-frame",
+        attitude.reference_frame
         || "---"
     );
 
 
-    setText(
-        "frame-time",
-        formatUtc(
-            frame.captured_at
-        )
-    );
-
-
-    const telemetry =
-        frame.telemetry;
-
-
-    if (!telemetry) {
-
-        setText(
-            "frame-accel",
-            "---"
+    const state =
+        document.getElementById(
+            "attitude-state"
         );
 
-        setText(
-            "frame-rate",
-            "---"
-        );
+    if (state) {
 
-        setText(
-            "frame-pressure",
-            "---"
-        );
+        state.textContent =
+            attitude.state
+            || "---";
 
-        return;
+        state.className =
+            "attitude-state";
+
+        state.classList.add(
+            attitude.state
+            === "STABLE"
+                ? "attitude-stable"
+                : "attitude-dynamic"
+        );
     }
 
 
-    const imu =
-        telemetry.imu;
-
-
-    setText(
-        "frame-accel",
-
-        formatValue(
-            imu.acceleration
-                .magnitude,
-            2
-        )
-        + " m/s²"
-    );
-
-
-    setText(
-        "frame-rate",
-
-        formatValue(
-            imu.angular_rate.x,
-            2
-        )
-        + " °/s"
-    );
-
-
-    setText(
-        "frame-pressure",
-
-        formatValue(
-            imu.pressure,
-            2
-        )
-        + " hPa"
-    );
-}
-
-
-function clearFrameDisplay() {
-
-    cameraImage.removeAttribute(
-        "src"
-    );
-
-    cameraImage.style.display =
-        "none";
-
-    noFrame.style.display =
-        "flex";
-
-
-    setText(
-        "frame-name",
-        "---"
-    );
-
-    setText(
-        "frame-time",
-        "---"
-    );
-
-    setText(
-        "frame-accel",
-        "---"
-    );
-
-    setText(
-        "frame-rate",
-        "---"
-    );
-
-    setText(
-        "frame-pressure",
-        "---"
-    );
-}
-
-
-async function updateCameraStatus() {
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/camera/status",
-                {
-                    cache:
-                        "no-store"
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            data.status !== "online"
-        ) {
-
-            payloadStatus.textContent =
-                "FAULT";
-
-            setText(
-                "system-optical-payload",
-                "FAULT"
-            );
-
-            return;
-        }
-
-
-        payloadStatus.textContent =
-            "READY";
-
-
-        currentFrameCount =
-            data.frame_count;
-
-
-        setText(
-            "frame-count",
-            data.frame_count
+    const horizon =
+        document.getElementById(
+            "attitude-horizon"
         );
-
-
-        setText(
-            "archive-size",
-            formatBytes(
-                data.archive_bytes
-            )
-        );
-
-
-        setText(
-            "storage-free",
-            formatBytes(
-                data.disk.free_bytes
-            )
-        );
-
-
-        setText(
-            "last-frame-time",
-            data.last_frame
-                ? formatUtc(
-                    data.last_frame
-                        .timestamp
-                )
-                : "---"
-        );
-
-
-        setText(
-            "modal-frame-count",
-            data.frame_count
-        );
-
-
-        clearArchiveButton.disabled =
-            data.frame_count === 0;
-
-    }
-
-    catch (error) {
-
-        payloadStatus.textContent =
-            "OFFLINE";
-    }
-}
-
-
-async function captureFrame() {
-
-    captureButton.disabled =
-        true;
-
-    captureButton.textContent =
-        "ACQUIRING...";
-
-    payloadStatus.textContent =
-        "ACQUIRING";
-
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/camera/capture",
-                {
-                    method: "POST"
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            data.status !== "ok"
-        ) {
-
-            payloadStatus.textContent =
-                "FAULT";
-
-            return;
-        }
-
-
-        payloadStatus.textContent =
-            "FRAME ACQUIRED";
-
-
-        renderFrame(
-            data.frame
-        );
-
-
-        await loadFrames();
-
-        await updateCameraStatus();
-
-    }
-
-    catch (error) {
-
-        payloadStatus.textContent =
-            "OFFLINE";
-    }
-
-    finally {
-
-        captureButton.disabled =
-            false;
-
-        captureButton.textContent =
-            "CAPTURE FRAME";
-    }
-}
-
-
-async function loadFrames() {
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/camera/images",
-                {
-                    cache:
-                        "no-store"
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        cameraGallery.innerHTML =
-            "";
-
-
-        if (
-            !data.frames ||
-            data.frames.length === 0
-        ) {
-
-            clearFrameDisplay();
-
-            return;
-        }
-
-
-        for (
-            const frame
-            of data.frames
-        ) {
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-
-            button.className =
-                "gallery-frame";
-
-
-            const image =
-                document.createElement(
-                    "img"
-                );
-
-
-            image.src =
-                frame.url;
-
-
-            image.alt =
-                frame.frame_id
-                || "Helios frame";
-
-
-            button.appendChild(
-                image
-            );
-
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    renderFrame(
-                        frame
-                    );
-                }
-            );
-
-
-            cameraGallery.appendChild(
-                button
-            );
-        }
-
-
-        renderFrame(
-            data.frames[0]
-        );
-
-    }
-
-    catch (error) {
-
-        payloadStatus.textContent =
-            "OFFLINE";
-    }
-}
-
-
-function openArchiveModal() {
 
     if (
-        currentFrameCount === 0
+        horizon
+        && typeof attitude.roll
+        === "number"
+        && typeof attitude.pitch
+        === "number"
     ) {
-        return;
+
+        const pitchPixels =
+            Math.max(
+                -55,
+                Math.min(
+                    55,
+                    attitude.pitch * 1.4
+                )
+            );
+
+
+        horizon.style.transform =
+            `translateY(${pitchPixels}px) `
+            + `rotate(${-attitude.roll}deg)`;
     }
-
-
-    setText(
-        "modal-frame-count",
-        currentFrameCount
-    );
-
-
-    archiveModal.classList.add(
-        "modal-visible"
-    );
 }
 
 
-function closeArchiveModal() {
+async function updateTelemetry() {
 
-    archiveModal.classList.remove(
-        "modal-visible"
-    );
-}
+    const status =
+        document.getElementById(
+            "status"
+        );
 
-
-async function deleteArchive() {
-
-    confirmDeleteButton.disabled =
-        true;
-
-    confirmDeleteButton.textContent =
-        "DELETING...";
+    const error =
+        document.getElementById(
+            "error"
+        );
 
 
     try {
 
         const response =
             await fetch(
-                "/api/camera/frames",
+                "/api/telemetry",
                 {
-                    method: "DELETE"
+                    cache:
+                        "no-store"
                 }
             );
 
@@ -609,108 +311,305 @@ async function deleteArchive() {
 
 
         if (
-            !response.ok ||
-            data.status !== "ok"
+            !response.ok
+            || data.status
+            !== "online"
         ) {
 
-            payloadStatus.textContent =
-                "FAULT";
+            status.textContent =
+                "● OFFLINE";
+
+            status.className =
+                "status status-offline";
+
+            setModeState(
+                data.mode
+                || "SAFE"
+            );
+
+            error.textContent =
+                data.error
+                || "Telemetry unavailable";
 
             return;
         }
 
 
-        closeArchiveModal();
+        lastPacketReceivedAt =
+            performance.now();
 
-        cameraGallery.innerHTML =
+        packetCounter += 1;
+
+
+        status.textContent =
+            "● ONLINE";
+
+        status.className =
+            "status status-online";
+
+
+        setModeState(
+            data.mode
+        );
+
+
+        setText(
+            "utc-time",
+            formatUtc(
+                data.timestamp
+            )
+        );
+
+
+        error.textContent =
             "";
 
-        clearFrameDisplay();
 
-        payloadStatus.textContent =
-            "ARCHIVE CLEARED";
+        const systems =
+            data.systems;
 
 
-        await updateCameraStatus();
+        setSystemState(
+            "system-flight-computer",
+            systems.flight_computer
+        );
+
+        setSystemState(
+            "system-accelerometer",
+            systems.accelerometer
+        );
+
+        setSystemState(
+            "system-gyroscope",
+            systems.gyroscope
+        );
+
+        setSystemState(
+            "system-magnetometer",
+            systems.magnetometer
+        );
+
+        setSystemState(
+            "system-barometer",
+            systems.barometer
+        );
+
+        setSystemState(
+            "system-optical-payload",
+            systems.optical_payload
+        );
+
+
+        const imu =
+            data.imu;
+
+
+        const acceleration =
+            imu.acceleration;
+
+
+        setText(
+            "accel-x",
+            formatNumber(
+                acceleration.x
+            )
+        );
+
+        setText(
+            "accel-y",
+            formatNumber(
+                acceleration.y
+            )
+        );
+
+        setText(
+            "accel-z",
+            formatNumber(
+                acceleration.z
+            )
+        );
+
+        setText(
+            "accel-mag",
+            formatNumber(
+                acceleration.magnitude
+            )
+        );
+
+        setText(
+            "accel-g",
+            formatNumber(
+                acceleration.g
+            )
+        );
+
+
+        const rate =
+            imu.angular_rate;
+
+
+        setText(
+            "rate-x",
+            formatNumber(
+                rate.x
+            )
+        );
+
+        setText(
+            "rate-y",
+            formatNumber(
+                rate.y
+            )
+        );
+
+        setText(
+            "rate-z",
+            formatNumber(
+                rate.z
+            )
+        );
+
+
+        const magnetic =
+            imu.magnetic_field;
+
+
+        setText(
+            "mag-x",
+            formatNumber(
+                magnetic.x
+            )
+        );
+
+        setText(
+            "mag-y",
+            formatNumber(
+                magnetic.y
+            )
+        );
+
+        setText(
+            "mag-z",
+            formatNumber(
+                magnetic.z
+            )
+        );
+
+
+        const magneticAvailable =
+            magnetic.x !== null
+            || magnetic.y !== null
+            || magnetic.z !== null;
+
+
+        setText(
+            "mag-status",
+            magneticAvailable
+                ? "ACTIVE"
+                : "NO DATA"
+        );
+
+
+        setText(
+            "pressure",
+            formatNumber(
+                imu.pressure,
+                2
+            )
+        );
+
+
+        updateAttitude(
+            data.attitude
+        );
 
     }
 
-    catch (error) {
+    catch (exception) {
 
-        payloadStatus.textContent =
-            "FAULT";
-    }
+        status.textContent =
+            "● OFFLINE";
 
-    finally {
+        status.className =
+            "status status-offline";
 
-        confirmDeleteButton.disabled =
-            false;
-
-        confirmDeleteButton.textContent =
-            "DELETE ARCHIVE";
+        error.textContent =
+            exception.toString();
     }
 }
 
 
-captureButton.addEventListener(
-    "click",
-    captureFrame
-);
+function updatePacketAge() {
 
+    if (
+        lastPacketReceivedAt
+        === null
+    ) {
 
-clearArchiveButton.addEventListener(
-    "click",
-    openArchiveModal
-);
+        setText(
+            "packet-age",
+            "--- ms"
+        );
 
-
-cancelDeleteButton.addEventListener(
-    "click",
-    closeArchiveModal
-);
-
-
-confirmDeleteButton.addEventListener(
-    "click",
-    deleteArchive
-);
-
-
-archiveModal.addEventListener(
-    "click",
-    event => {
-
-        if (
-            event.target ===
-            archiveModal
-        ) {
-
-            closeArchiveModal();
-        }
+        return;
     }
-);
 
 
-document.addEventListener(
-    "keydown",
-    event => {
+    const age =
+        performance.now()
+        - lastPacketReceivedAt;
 
-        if (
-            event.key === "Escape"
-        ) {
 
-            closeArchiveModal();
-        }
+    setText(
+        "packet-age",
+        Math.round(age)
+        + " ms"
+    );
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    if (age > 1500) {
+
+        status.textContent =
+            "● LINK LOST";
+
+        status.className =
+            "status status-offline";
     }
-);
-
-
-loadFrames();
-
-updateCameraStatus();
+}
 
 
 setInterval(
-    updateCameraStatus,
-    2000
+    () => {
+
+        setText(
+            "telemetry-rate",
+            packetCounter
+            + " Hz"
+        );
+
+        packetCounter = 0;
+
+    },
+    1000
+);
+
+
+setInterval(
+    updatePacketAge,
+    50
+);
+
+
+updateTelemetry();
+
+
+setInterval(
+    updateTelemetry,
+    50
 );
