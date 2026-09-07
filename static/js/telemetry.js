@@ -268,5 +268,5 @@ updateTelemetry();
 
 setInterval(
     updateTelemetry,
-    500
+    50
 );
